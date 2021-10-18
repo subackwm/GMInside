@@ -7,6 +7,8 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const fs = require('fs');
 
+var currentUser = 0, topCurrentUser = 0;
+
 app.get('/icon', function (req, res) {
   fs.readFile('res/dc.png', function (error, data) {
     res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -19,10 +21,14 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  currentUser++;
+  if (topCurrentUser < currentUser)
+  topCurrentUser = currentUser;
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    currentUser--;
+    console.log('a user disconnected | current user : ' + currentUser + " top current user : " + topCurrentUser);
   });
+  console.log('a user connected | current user : ' + currentUser + " top current user : " + topCurrentUser);
 });
 
 server.listen(3000, () => {
@@ -56,10 +62,10 @@ io.on('connection', (socket) => {
   socket.on('init', () => {
     sendContent();
   });
-  
+
   socket.on('write', (title, name, content) => {
     contents.push(new Content(title, name, content));
-    
+
     sendContent();
   })
 
