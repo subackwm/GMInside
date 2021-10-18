@@ -52,12 +52,14 @@
                 this.app = app;
                 this.init();
                 this.title;
+                this.name;
                 this.content;
             }
 
             init = () => {
-                this.addInput('제목', 'title', this.app.compoCenter - this.app.compoWidth / 2, 100, this.app.compoWidth, 80);
-                this.addInput('내용', 'content', this.app.compoCenter - this.app.compoWidth / 2, 200, this.app.compoWidth, 500);
+                this.addInput('제목', 'title', this.app.compoCenter - this.app.compoWidth / 2, 100, this.app.compoWidth, 45);
+                this.addInput('이름', 'name', this.app.compoCenter - this.app.compoWidth / 2, 150, this.app.compoWidth, 45);
+                this.addInput('내용', 'content', this.app.compoCenter - this.app.compoWidth / 2, 200, this.app.compoWidth, 300);
             }
 
             renderComponent = () => {
@@ -71,6 +73,8 @@
 
                 if (type == 'title')
                     this.title = input;
+                if (type == 'name')
+                    this.name = input;
                 if (type == 'content')
                     this.content = input;
 
@@ -78,6 +82,7 @@
                 input.style.position = 'fixed';
                 input.style.left = (x) + 'px';
                 input.style.top = (y) + 'px';
+                input.style.resize = 'none';
                 input.style.width = w;
                 input.style.height = h;
                 input.placeholder = ph;
@@ -112,11 +117,18 @@
                 this.plusButtonX = app.compoCenter - app.compoWidth / 2 + 50;
                 this.plusButtonY = canvas.height - 50;
 
+                // if (this.title != null)
+                this.title.style.left = this.app.compoCenter - this.app.compoWidth / 2 + 'px';
+                // if (this.content != null)
+                this.content.style.left = this.app.compoCenter - this.app.compoWidth / 2 + 'px';
+                // if (this.content != null)
+                this.name.style.left = this.app.compoCenter - this.app.compoWidth / 2 + 'px';
+
                 if (app.getDist(this.plusButtonX, this.plusButtonY, app.mouseX, app.mouseY) <= this.plusButtonR * 2) {
                     if (app.mouseDown) {
-                        socket.emit('write', { title: this.title.value, content: this.content.value });
+                        socket.emit('write', { title: this.title.value, name: this.name.value, content: this.content.value });
 
-                        for (var i = 0; i < 2; i++)
+                        for (var i = 0; i < 3; i++)
                             document.getElementById('myInput').remove();
 
                         this.app.state = new MainState(this.app);
@@ -173,7 +185,7 @@
                 ctx.textAlign = 'right';
                 ctx.font = '20px "BMJUA"';
                 ctx.fillStyle = 'rgb(130, 130, 130)';
-                ctx.fillText('ㅇㅇ', this.app.compoCenter + this.app.compoWidth / 2 - 15, y + this.app.contentHeight / 3 * 2);
+                ctx.fillText(content.name, this.app.compoCenter + this.app.compoWidth / 2 - 15, y + this.app.contentHeight / 3 * 2);
             }
 
             renderPlusIcon = (x, y) => {
@@ -208,8 +220,8 @@
                 this.plusButtonY = canvas.height - 50;
 
                 if (app.getDist(this.plusButtonX, this.plusButtonY, app.mouseX, app.mouseY) <= this.plusButtonR * 2) {
-                    if (app.mouseDown) {
-                        app.state = new WriteState(app);
+                    if (this.app.mouseDown) {
+                        this.app.state = new WriteState(app);
                         this.app.mouseDown = false;
                     }
                 }
@@ -270,11 +282,25 @@
                 this.mouseDown = false;
             }
 
+            touchdown = (e) => {
+                if (app.isMob) {
+                    this.mouseX = e.changedTouches[0].clientX;
+                    this.mouseY = e.changedTouches[0].clientY;
+                    this.mouseDown = true;
+                }
+            }
+
+            touchup = (e) => {
+                if (app.isMob)
+                    this.mouseDown = false;
+            }
+
             getDist = (x1, y1, x2, y2) => {
                 return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
             }
 
             update = () => {
+                this.compoCenter = canvas.width / 2;
                 this.resize();
                 this.state.update(this);
             }
@@ -290,6 +316,8 @@
         window.addEventListener('mousemove', app.mousemove);
         window.addEventListener('mousedown', app.mousedown);
         window.addEventListener('mouseup', app.mouseup);
+        window.addEventListener('touchstart', app.touchdown);
+        window.addEventListener('touchend', app.touchup);
         window.onload = () => {
             app.init();
         }

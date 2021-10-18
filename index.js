@@ -30,8 +30,9 @@ server.listen(3000, () => {
 });
 
 class Content {
-  constructor(title, content) {
+  constructor(title, name, content) {
     this.title = title;
+    this.name = name;
     this.content = content;
   }
 }
@@ -44,6 +45,7 @@ sendContent = () => {
   for (var i = 0; i < contents.length; i++) {
     var __ct = new Object();
     __ct.title = contents[i].title;
+    __ct.name = contents[i].name;
     __ct.content = contents[i].content;
     _ct.push(__ct);
   }
@@ -55,8 +57,8 @@ io.on('connection', (socket) => {
     sendContent();
   });
   
-  socket.on('write', (title, content) => {
-    contents.push(new Content(title, content));
+  socket.on('write', (title, name, content) => {
+    contents.push(new Content(title, name, content));
     
     sendContent();
   })
